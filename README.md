@@ -26,7 +26,7 @@ The generated recipe is presented with a real food photograph, downloadable shop
 
 > In short: Quantum computing picks the best ingredients. AI turns them into a masterpiece recipe. 🍳⚛️
 
-## ✨ Features
+##  Features
 
 -  **Quantum Optimization** — QAOA, VQE, and Grover's algorithm for ingredient selection
 -  **AI Recipe Generation** — Powered by Groq API (LLaMA, GPT, Qwen models)
