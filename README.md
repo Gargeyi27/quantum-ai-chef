@@ -4,7 +4,7 @@
 Gargeyi's Chromodynamics Café is an intelligent recipe generation system that combines **Quantum Computing** and **Large Language Models (LLMs)** to create highly personalized, restaurant-quality recipes.
 
 ##  Demo Video
-> *Add your demo video link here after uploading to GitHub Issues*
+[![Demo Video](https://img.shields.io/badge/?_Watch_Demo-Google_Drive-blue?style=for-the-badge&logo=googledrive)](https://drive.google.com/file/d/18Vr0qKRbZUkRA836r8Kdrpx2M4BSJa0-/view?usp=sharing)
 
 ---
 
@@ -163,4 +163,5 @@ Implemented in `quantum_engine/optimizer.py` using Qiskit:
 ---
 
 *Built by Gargeyi* 
+
 
