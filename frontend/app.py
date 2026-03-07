@@ -4,7 +4,7 @@ import json
 import random
 from datetime import datetime
 
-API_URL = "http://localhost:8000"
+API_URL = "http://localhost:8001"
 
 st.set_page_config(page_title="Gargeyi's Chromodynamics Cafe", page_icon="⚛️", layout="wide")
 

@@ -7,7 +7,8 @@ import os
 from typing import List, Dict, Optional
 from groq import Groq
 
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+client = Groq(api_key="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")
+
 
 CUISINE_KNOWLEDGE = {
     "Indian": {
@@ -249,17 +250,9 @@ def teacher_agent_prompt(cooking_steps, skill_level):
 class AIRecipeBrain:
     def __init__(self):
         self.models = [
-            "openai/gpt-oss-120b",
-            "openai/gpt-oss-20b",
-            "llama-3.1-8b-instant",
-            "qwen/qwen3-32b",
-            "moonshotai/kimi-k2-instruct-0905",
-            "moonshotai/kimi-k2-instruct",
             "llama-3.3-70b-versatile",
-            "meta-llama/llama-4-maverick-17b-128e-instruct",
-            "meta-llama/llama-4-scout-17b-16e-instruct",
-            "groq/compound",
-            "groq/compound-mini",
+            "llama-3.1-8b-instant",
+            "mixtral-8x7b-32768",
         ]
         self.model = self.models[0]
 
@@ -277,11 +270,9 @@ class AIRecipeBrain:
                     print(f"Used fallback model: {model}")
                 return response.choices[0].message.content
             except Exception as e:
-                if "rate_limit" in str(e) or "429" in str(e):
-                    print(f"Rate limit on {model}, trying next...")
-                    last_error = e
-                    continue
-                raise e
+                print(f"Model {model} failed: {str(e)[:80]}, trying next...")
+                last_error = e
+                continue
         raise last_error
 
     def _parse_json(self, text):
@@ -519,3 +510,7 @@ class AIRecipeBrain:
             "healthy_swaps": swaps,
             "best_time_to_eat": best
         }
+
+
+
+
