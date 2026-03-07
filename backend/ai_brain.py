@@ -106,209 +106,164 @@ CUISINE_KNOWLEDGE = {
 def chef_agent_prompt(dish_hint, cuisine1, cuisine2, veg, ingredients, is_fusion, skill_level):
     fusion_note = ""
     if is_fusion and cuisine2:
-        fusion_note = f"""
-FUSION RECIPE RULES:
-- This is a {cuisine1} x {cuisine2} FUSION dish
-- Combine cooking techniques from BOTH {cuisine1} AND {cuisine2}
-- The dish name MUST reflect both cultures (e.g. Tikka Masala Pasta for Indian x Italian)
-- Use spices and flavor profiles from BOTH cuisines creatively
-"""
+        fusion_note = (
+            f"FUSION RECIPE RULES:\n"
+            f"- This is a {cuisine1} x {cuisine2} FUSION dish\n"
+            f"- Combine cooking techniques from BOTH {cuisine1} AND {cuisine2}\n"
+            f"- The dish name MUST reflect both cultures\n"
+            f"- Use spices and flavor profiles from BOTH cuisines creatively\n"
+        )
 
     diet_note = "STRICTLY VEGETARIAN - NO meat, NO chicken, NO beef, NO pork, NO fish, NO shrimp, NO seafood whatsoever" if veg else "Non-Vegetarian - can include meat, poultry, seafood as appropriate"
-
     quantum_ingredients = ", ".join(ingredients)
+    cuisine_display = cuisine1 + (" x " + cuisine2 if is_fusion and cuisine2 else "")
 
-    return f"""You are a Michelin 3-star professional chef with 30 years of experience. You MUST create an EXTREMELY DETAILED and COMPLETE recipe.
-
-DISH: {dish_hint}
-CUISINE: {cuisine1}{" x " + cuisine2 if is_fusion and cuisine2 else ""}
-{fusion_note}
-DIET: {diet_note}
-SKILL LEVEL: {skill_level}
-QUANTUM-OPTIMIZED BASE INGREDIENTS: {quantum_ingredients}
-
-=== STRICT INGREDIENT RULES (VERY IMPORTANT) ===
-You MUST list AT LEAST 20 ingredients. No exceptions.
-Include ALL of the following categories:
-1. MAIN INGREDIENT of the dish (e.g. for biryani: basmati rice AND meat/paneer)
-2. ALL vegetables needed
-3. ALL spices individually (e.g. cumin seeds, coriander powder, turmeric, garam masala separately)
-4. ALL liquids (water, broth, cream, coconut milk, stock etc with exact ml/cups)
-5. ALL aromatics (garlic, ginger, onion, shallots etc)
-6. ALL oils, butter, ghee with exact amounts
-7. ALL garnishes (fresh herbs, lemon, cream, nuts etc)
-8. ALL pantry staples (salt, pepper, sugar if needed)
-9. ALL sauces, pastes (tomato puree, soy sauce, fish sauce etc)
-10. ALL additional flavor enhancers (bay leaves, cardamom, cloves etc)
-
-NEVER use "as needed" or "to taste" alone - always give exact amounts.
-Every ingredient MUST have:
-- Exact amount with unit (e.g. "2 tablespoons", "200 grams", "1.5 cups")
-- Preparation note (e.g. "finely chopped", "freshly grated", "soaked 30 minutes")
-
-=== STRICT STEP RULES (VERY IMPORTANT) ===
-You MUST write AT LEAST 12 detailed cooking steps. No exceptions.
-Each step MUST include:
-- Exact temperature in Celsius AND Fahrenheit
-- Exact cooking time in minutes
-- Precise technique with explanation of WHY
-- What could go wrong and how to avoid it
-- Sensory cue (what to see, smell, hear)
-- A beginner tip
-
-Include these as SEPARATE steps:
-- Ingredient preparation (washing, chopping, marinating)
-- Making the base/sauce
-- Cooking main protein or main ingredient
-- Adding spices and building flavor
-- Final assembly
-- Plating and garnishing
-
-CRITICAL: Respond ONLY with valid JSON. No markdown, no text outside JSON. Keep each ingredient note under 10 words. Keep each step instruction under 100 words. The entire JSON must be complete and valid:
-{{
-  "dish_name": "Creative authentic name for {dish_hint}",
-  "tagline": "One irresistible mouth-watering sentence",
-  "cuisine_type": "{cuisine1}{" x " + cuisine2 if is_fusion and cuisine2 else ""}",
-  "serves": 2,
-  "prep_time": "X minutes",
-  "cook_time": "X minutes",
-  "difficulty": "{skill_level}",
-  "ingredients": [
-    {{"name": "ingredient 1", "amount": "exact amount with unit", "note": "detailed prep note"}},
-    {{"name": "ingredient 2", "amount": "exact amount with unit", "note": "detailed prep note"}},
-    {{"name": "ingredient 3", "amount": "exact amount with unit", "note": "detailed prep note"}},
-    {{"name": "ingredient 4", "amount": "exact amount with unit", "note": "detailed prep note"}},
-    {{"name": "ingredient 5", "amount": "exact amount with unit", "note": "detailed prep note"}},
-    {{"name": "ingredient 6", "amount": "exact amount with unit", "note": "detailed prep note"}},
-    {{"name": "ingredient 7", "amount": "exact amount with unit", "note": "detailed prep note"}},
-    {{"name": "ingredient 8", "amount": "exact amount with unit", "note": "detailed prep note"}},
-    {{"name": "ingredient 9", "amount": "exact amount with unit", "note": "detailed prep note"}},
-    {{"name": "ingredient 10", "amount": "exact amount with unit", "note": "detailed prep note"}},
-    {{"name": "ingredient 11", "amount": "exact amount with unit", "note": "detailed prep note"}},
-    {{"name": "ingredient 12", "amount": "exact amount with unit", "note": "detailed prep note"}},
-    {{"name": "ingredient 13", "amount": "exact amount with unit", "note": "detailed prep note"}},
-    {{"name": "ingredient 14", "amount": "exact amount with unit", "note": "detailed prep note"}},
-    {{"name": "ingredient 15", "amount": "exact amount with unit", "note": "detailed prep note"}},
-    {{"name": "ingredient 16", "amount": "exact amount with unit", "note": "detailed prep note"}},
-    {{"name": "ingredient 17", "amount": "exact amount with unit", "note": "detailed prep note"}},
-    {{"name": "ingredient 18", "amount": "exact amount with unit", "note": "detailed prep note"}},
-    {{"name": "ingredient 19", "amount": "exact amount with unit", "note": "detailed prep note"}},
-    {{"name": "ingredient 20", "amount": "exact amount with unit", "note": "detailed prep note"}}
-  ],
-  "equipment_needed": ["equipment1", "equipment2", "equipment3", "equipment4", "equipment5"],
-  "cooking_steps": [
-    {{
-      "step": 1,
-      "title": "Clear Descriptive Title",
-      "instruction": "Write 4-5 detailed sentences. Include exact temperature in Celsius AND Fahrenheit. Include exact time. Explain the technique clearly. Explain WHY this step is important. Mention what could go wrong.",
-      "tip": "Very specific helpful tip for a beginner for this exact step",
-      "sensory_cue": "Exactly what you should see, smell, hear or feel when this step is done correctly",
-      "time": "X minutes"
-    }},
-    {{
-      "step": 2,
-      "title": "Clear Descriptive Title",
-      "instruction": "Write 4-5 detailed sentences with exact temp, time and technique.",
-      "tip": "Specific tip for this step",
-      "sensory_cue": "What to look/smell/hear for",
-      "time": "X minutes"
-    }}
-  ],
-  "plating": "Very detailed plating and garnish instructions for a beautiful restaurant-quality presentation",
-  "chef_tips": ["Professional tip 1", "Professional tip 2", "Storage instructions", "Reheating tip", "Serving suggestion"],
-  "variations": ["Variation 1 with description", "Variation 2 with description", "Variation 3 with description"],
-  "substitutions": [
-    {{"original": "ingredient", "substitute": "alternative ingredient", "flavor_impact": "exactly how the taste and texture changes"}}
-  ],
-  "nutrition": {{
-    "per_serving": {{
-      "calories": CALCULATE_ACCURATE_calories_for_{dish_hint},
-      "protein_g": CALCULATE_ACCURATE_protein,
-      "carbs_g": CALCULATE_ACCURATE_carbs,
-      "fat_g": CALCULATE_ACCURATE_fat,
-      "fiber_g": CALCULATE_ACCURATE_fiber,
-      "sodium_mg": CALCULATE_ACCURATE_sodium
-    }},
-    "health_benefits": ["specific benefit from actual ingredients used", "specific benefit 2", "specific benefit 3"],
-    "who_should_avoid": ["specific dietary restriction 1", "specific restriction 2"],
-    "dietary_tags": ["tag1", "tag2"],
-    "healthy_swaps": ["specific swap for THIS dish", "specific swap 2"],
-    "best_time_to_eat": "when and why this dish is best eaten"
-  }}
-}}"""
+    prompt = (
+        "You are a Michelin 3-star professional chef with 30 years of experience.\n\n"
+        f"DISH: {dish_hint}\n"
+        f"CUISINE: {cuisine_display}\n"
+        f"DIET: {diet_note}\n"
+        f"SKILL LEVEL: {skill_level}\n"
+        f"BASE INGREDIENTS: {quantum_ingredients}\n"
+        f"{fusion_note}\n"
+        "=== MANDATORY RULES ===\n"
+        "1. List EXACTLY 25 real ingredients specific to this dish. Split every spice separately.\n"
+        "2. Write EXACTLY 15 cooking steps specific to this dish.\n"
+        "3. Every ingredient needs exact amount and prep note.\n"
+        "4. Every step needs exact temp (C and F), exact time, technique, why it matters, what can go wrong.\n"
+        "5. RESPOND ONLY WITH VALID JSON. No markdown, no text outside JSON.\n\n"
+        "{\n"
+        f'  "dish_name": "Authentic name for {dish_hint}",\n'
+        '  "tagline": "One irresistible sentence",\n'
+        f'  "cuisine_type": "{cuisine_display}",\n'
+        '  "serves": 2,\n'
+        '  "prep_time": "X minutes",\n'
+        '  "cook_time": "X minutes",\n'
+        f'  "difficulty": "{skill_level}",\n'
+        '  "ingredients": [\n'
+        '    {"name": "ingredient 1", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 2", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 3", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 4", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 5", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 6", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 7", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 8", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 9", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 10", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 11", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 12", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 13", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 14", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 15", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 16", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 17", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 18", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 19", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 20", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 21", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 22", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 23", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 24", "amount": "exact amount", "note": "prep note"},\n'
+        '    {"name": "ingredient 25", "amount": "exact amount", "note": "prep note"}\n'
+        '  ],\n'
+        '  "equipment_needed": ["item1", "item2", "item3", "item4", "item5"],\n'
+        '  "cooking_steps": [\n'
+        '    {"step": 1, "title": "title", "instruction": "4-5 sentences with exact temp C/F, time, technique, why, what can go wrong.", "tip": "beginner tip", "sensory_cue": "what to see/smell/hear", "time": "X min"},\n'
+        '    {"step": 2, "title": "title", "instruction": "4-5 sentences with exact temp C/F, time, technique, why, what can go wrong.", "tip": "beginner tip", "sensory_cue": "what to see/smell/hear", "time": "X min"},\n'
+        '    {"step": 3, "title": "title", "instruction": "4-5 sentences with exact temp C/F, time, technique, why, what can go wrong.", "tip": "beginner tip", "sensory_cue": "what to see/smell/hear", "time": "X min"},\n'
+        '    {"step": 4, "title": "title", "instruction": "4-5 sentences with exact temp C/F, time, technique, why, what can go wrong.", "tip": "beginner tip", "sensory_cue": "what to see/smell/hear", "time": "X min"},\n'
+        '    {"step": 5, "title": "title", "instruction": "4-5 sentences with exact temp C/F, time, technique, why, what can go wrong.", "tip": "beginner tip", "sensory_cue": "what to see/smell/hear", "time": "X min"},\n'
+        '    {"step": 6, "title": "title", "instruction": "4-5 sentences with exact temp C/F, time, technique, why, what can go wrong.", "tip": "beginner tip", "sensory_cue": "what to see/smell/hear", "time": "X min"},\n'
+        '    {"step": 7, "title": "title", "instruction": "4-5 sentences with exact temp C/F, time, technique, why, what can go wrong.", "tip": "beginner tip", "sensory_cue": "what to see/smell/hear", "time": "X min"},\n'
+        '    {"step": 8, "title": "title", "instruction": "4-5 sentences with exact temp C/F, time, technique, why, what can go wrong.", "tip": "beginner tip", "sensory_cue": "what to see/smell/hear", "time": "X min"},\n'
+        '    {"step": 9, "title": "title", "instruction": "4-5 sentences with exact temp C/F, time, technique, why, what can go wrong.", "tip": "beginner tip", "sensory_cue": "what to see/smell/hear", "time": "X min"},\n'
+        '    {"step": 10, "title": "title", "instruction": "4-5 sentences with exact temp C/F, time, technique, why, what can go wrong.", "tip": "beginner tip", "sensory_cue": "what to see/smell/hear", "time": "X min"},\n'
+        '    {"step": 11, "title": "title", "instruction": "4-5 sentences with exact temp C/F, time, technique, why, what can go wrong.", "tip": "beginner tip", "sensory_cue": "what to see/smell/hear", "time": "X min"},\n'
+        '    {"step": 12, "title": "title", "instruction": "4-5 sentences with exact temp C/F, time, technique, why, what can go wrong.", "tip": "beginner tip", "sensory_cue": "what to see/smell/hear", "time": "X min"},\n'
+        '    {"step": 13, "title": "title", "instruction": "4-5 sentences with exact temp C/F, time, technique, why, what can go wrong.", "tip": "beginner tip", "sensory_cue": "what to see/smell/hear", "time": "X min"},\n'
+        '    {"step": 14, "title": "title", "instruction": "4-5 sentences with exact temp C/F, time, technique, why, what can go wrong.", "tip": "beginner tip", "sensory_cue": "what to see/smell/hear", "time": "X min"},\n'
+        '    {"step": 15, "title": "title", "instruction": "4-5 sentences with exact temp C/F, time, technique, why, what can go wrong.", "tip": "beginner tip", "sensory_cue": "what to see/smell/hear", "time": "X min"}\n'
+        '  ],\n'
+        '  "plating": "Detailed restaurant-quality plating instructions",\n'
+        '  "chef_tips": ["tip1", "tip2", "storage tip", "reheating tip", "serving tip"],\n'
+        '  "variations": ["variation 1", "variation 2", "variation 3"],\n'
+        '  "substitutions": [{"original": "ingredient", "substitute": "alternative", "flavor_impact": "how taste changes"}],\n'
+        '  "nutrition": {\n'
+        '    "per_serving": {"calories": 0, "protein_g": 0, "carbs_g": 0, "fat_g": 0, "fiber_g": 0, "sodium_mg": 0},\n'
+        '    "health_benefits": ["benefit1", "benefit2", "benefit3"],\n'
+        '    "who_should_avoid": ["restriction1", "restriction2"],\n'
+        '    "dietary_tags": ["tag1", "tag2"],\n'
+        '    "healthy_swaps": ["swap1", "swap2"],\n'
+        '    "best_time_to_eat": "when and why"\n'
+        '  }\n'
+        '}'
+    )
+    return prompt
 
 
 def nutrition_agent_prompt(dish_name, ingredients):
     ing_list = ', '.join(ingredients)
-    return f"""You are a certified nutritionist with 20 years experience. Calculate ACCURATE nutrition for {dish_name}.
-
-Ingredients: {ing_list}
-
-CRITICAL RULES:
-- Calculate REALISTIC values for THIS specific dish - do NOT use generic placeholder values
-- Butter chicken: ~450 cal, 35g protein, 15g carbs, 28g fat
-- Biryani: ~550 cal, 25g protein, 65g carbs, 18g fat  
-- Pasta with cream: ~600 cal, 18g protein, 70g carbs, 25g fat
-- Vegetable soup: ~120 cal, 5g protein, 18g carbs, 3g fat
-- Caesar salad: ~350 cal, 12g protein, 15g carbs, 28g fat
-- Use these as reference and calculate accurately for {dish_name}
-- Health benefits must be SPECIFIC to the actual ingredients (e.g. turmeric = anti-inflammatory)
-- Healthy swaps must be SPECIFIC to this dish
-
-Respond ONLY with valid JSON, no markdown, no extra text:
-{{
-  "per_serving": {{
-    "calories": CALCULATE_REALISTIC_VALUE,
-    "protein_g": CALCULATE_REALISTIC_VALUE,
-    "carbs_g": CALCULATE_REALISTIC_VALUE,
-    "fat_g": CALCULATE_REALISTIC_VALUE,
-    "fiber_g": CALCULATE_REALISTIC_VALUE,
-    "sodium_mg": CALCULATE_REALISTIC_VALUE
-  }},
-  "health_benefits": ["specific benefit from actual ingredient 1", "specific benefit 2", "specific benefit 3"],
-  "who_should_avoid": ["specific group 1", "specific group 2"],
-  "dietary_tags": ["tag1", "tag2", "tag3"],
-  "healthy_swaps": ["specific swap for this dish 1", "specific swap 2"],
-  "best_time_to_eat": "when this dish is best eaten and why"
-}}"""
+    return (
+        f"You are a certified nutritionist. Calculate ACCURATE nutrition for {dish_name}.\n"
+        f"Ingredients: {ing_list}\n\n"
+        "Calculate REALISTIC values for THIS specific dish.\n"
+        "Reference: Butter chicken ~450cal/35g protein, Biryani ~550cal/25g protein, Pasta ~580cal/18g protein\n"
+        "Health benefits must be SPECIFIC to actual ingredients used.\n\n"
+        "Respond ONLY with valid JSON, no markdown:\n"
+        '{\n'
+        '  "per_serving": {\n'
+        '    "calories": 400,\n'
+        '    "protein_g": 25,\n'
+        '    "carbs_g": 30,\n'
+        '    "fat_g": 15,\n'
+        '    "fiber_g": 4,\n'
+        '    "sodium_mg": 600\n'
+        '  },\n'
+        '  "health_benefits": ["benefit1", "benefit2", "benefit3"],\n'
+        '  "who_should_avoid": ["group1", "group2"],\n'
+        '  "dietary_tags": ["tag1", "tag2"],\n'
+        '  "healthy_swaps": ["swap1", "swap2"],\n'
+        '  "best_time_to_eat": "when and why"\n'
+        '}'
+    )
 
 
 def teacher_agent_prompt(cooking_steps, skill_level):
     steps_text = json.dumps(cooking_steps)
-    return f"""Rewrite these steps for a complete beginner: {steps_text}
-
-Respond ONLY with valid JSON array, no markdown:
-[
-  {{
-    "step": 1,
-    "simple_instruction": "Simple instruction anyone can follow",
-    "sensory_cue": "what you see or smell",
-    "safety_note": "what to watch out for",
-    "emoji_guide": "relevant emoji"
-  }}
-]"""
+    return (
+        f"Rewrite these cooking steps for a complete beginner: {steps_text}\n\n"
+        "Respond ONLY with valid JSON array, no markdown:\n"
+        "[\n"
+        '  {\n'
+        '    "step": 1,\n'
+        '    "simple_instruction": "Simple instruction anyone can follow",\n'
+        '    "sensory_cue": "what you see or smell",\n'
+        '    "safety_note": "what to watch out for",\n'
+        '    "emoji_guide": "relevant emoji"\n'
+        '  }\n'
+        "]"
+    )
 
 
 class AIRecipeBrain:
     def __init__(self):
-        # All available Groq free tier models - rotates on rate limit
-        # Ordered by output token capacity (highest first)
         self.models = [
-            "openai/gpt-oss-120b",                           # 65k out - highest capacity
-            "openai/gpt-oss-20b",                            # 65k out
-            "llama-3.1-8b-instant",                          # 131k out - very high
-            "qwen/qwen3-32b",                                # 40k out
-            "moonshotai/kimi-k2-instruct-0905",              # 16k out, 262k context
-            "moonshotai/kimi-k2-instruct",                   # 16k out
-            "llama-3.3-70b-versatile",                       # 32k out - best quality
-            "meta-llama/llama-4-maverick-17b-128e-instruct", # 8k out
-            "meta-llama/llama-4-scout-17b-16e-instruct",     # 8k out
-            "groq/compound",                                 # 8k out
-            "groq/compound-mini",                            # 8k out
+            "openai/gpt-oss-120b",
+            "openai/gpt-oss-20b",
+            "llama-3.1-8b-instant",
+            "qwen/qwen3-32b",
+            "moonshotai/kimi-k2-instruct-0905",
+            "moonshotai/kimi-k2-instruct",
+            "llama-3.3-70b-versatile",
+            "meta-llama/llama-4-maverick-17b-128e-instruct",
+            "meta-llama/llama-4-scout-17b-16e-instruct",
+            "groq/compound",
+            "groq/compound-mini",
         ]
         self.model = self.models[0]
 
-    def _call_groq(self, prompt, max_tokens=8000):
+    def _call_groq(self, prompt, max_tokens=12000):
         messages = [{"role": "user", "content": prompt}]
         last_error = None
         for model in self.models:
@@ -330,15 +285,17 @@ class AIRecipeBrain:
         raise last_error
 
     def _parse_json(self, text):
-        import re
         text = text.strip()
         if "```json" in text:
             text = text.split("```json")[1].split("```")[0].strip()
         elif "```" in text:
             text = text.split("```")[1].split("```")[0].strip()
-        replacements = [("‑","-"),("‒","-"),("–","-"),("—","-"),
-            ("‘","'"),("’","'"),("“",'"'),("”",'"'),
-            ("½","1/2"),("¼","1/4"),("¾","3/4"),(" "," "),(" "," ")]
+        replacements = [
+            ("\u2011", "-"), ("\u2012", "-"), ("\u2013", "-"), ("\u2014", "-"),
+            ("\u2018", "'"), ("\u2019", "'"), ("\u201c", '"'), ("\u201d", '"'),
+            ("\u00bd", "1/2"), ("\u00bc", "1/4"), ("\u00be", "3/4"),
+            ("\u2009", " "), ("\u00a0", " ")
+        ]
         for code, repl in replacements:
             text = text.replace(code, repl)
         start = text.find("{")
@@ -382,25 +339,28 @@ class AIRecipeBrain:
 
         try:
             prompt = chef_agent_prompt(dish_hint, cuisine1, cuisine2, veg, ingredients, is_fusion, skill_level)
-            raw = self._call_groq(prompt, max_tokens=8000)
+            print("DEBUG: Prompt OK, length:", len(prompt))
+            raw = self._call_groq(prompt, max_tokens=12000)
+            print("DEBUG: Response length:", len(raw))
+            print("DEBUG: First 200 chars:", raw[:200])
             recipe = self._parse_json(raw)
             if not recipe:
-                print("WARNING: JSON parse failed. Raw response:", raw[:500])
+                print("WARNING: JSON parse failed. Raw:", raw[:500])
+            else:
+                print("DEBUG: ingredients:", len(recipe.get("ingredients", [])), "steps:", len(recipe.get("cooking_steps", [])))
         except Exception as e:
+            import traceback
             print("ERROR in chef agent:", str(e))
+            traceback.print_exc()
             recipe = {}
 
         if not recipe:
             recipe = self._fallback_recipe(dish_hint, cuisine1, ingredients)
 
-        # Extract nutrition from recipe response (included in main prompt)
         nutrition = recipe.pop("nutrition", {}) if isinstance(recipe, dict) else {}
-        
-        # Validate nutrition has real values not placeholder text
         per_s = nutrition.get("per_serving", {}) if isinstance(nutrition, dict) else {}
         cal = per_s.get("calories", 0)
         if not nutrition or not isinstance(nutrition, dict) or not per_s or not isinstance(cal, (int, float)) or cal == 0:
-            # Fallback: make separate nutrition call
             try:
                 ing_names = [i.get("name", i) if isinstance(i, dict) else i for i in recipe.get("ingredients", ingredients)]
                 prompt2 = nutrition_agent_prompt(recipe.get("dish_name", dish_hint), ing_names)
@@ -413,7 +373,6 @@ class AIRecipeBrain:
             nutrition = self._fallback_nutrition(dish_hint=dish_hint, ingredients=ingredients)
         if not isinstance(nutrition.get("per_serving"), dict):
             nutrition = self._fallback_nutrition(dish_hint=dish_hint, ingredients=ingredients)
-        # Final check - if calories is still placeholder text, use fallback
         cal_val = nutrition.get("per_serving", {}).get("calories", 0)
         if not isinstance(cal_val, (int, float)) or cal_val == 0:
             nutrition = self._fallback_nutrition(dish_hint=dish_hint, ingredients=ingredients)
@@ -466,10 +425,10 @@ class AIRecipeBrain:
             ],
             "equipment_needed": ["Pan", "Knife", "Cutting board"],
             "cooking_steps": [
-                {"step": 1, "title": "Prepare Ingredients", "instruction": "Wash and chop all ingredients into even pieces. Keep everything in separate bowls ready to use.", "tip": "Prep before turning on heat.", "sensory_cue": "Everything clean and ready.", "time": "10 minutes"},
-                {"step": 2, "title": "Heat Oil", "instruction": "Place pan over medium heat. Add oil and heat 60 seconds until shimmering.", "tip": "Never let oil smoke.", "sensory_cue": "Oil shimmers when ready.", "time": "2 minutes"},
-                {"step": 3, "title": "Cook Aromatics", "instruction": "Add onion and garlic. Stir every 30 seconds for 3 minutes until golden.", "tip": "Keep stirring to avoid burning.", "sensory_cue": "Sweet fragrant aroma.", "time": "3 minutes"},
-                {"step": 4, "title": "Add Main Ingredients", "instruction": "Add remaining ingredients. Cook on medium-high for 5-7 minutes stirring occasionally.", "tip": "Don't overcrowd pan.", "sensory_cue": "Steady sizzle.", "time": "7 minutes"},
+                {"step": 1, "title": "Prepare Ingredients", "instruction": "Wash and chop all ingredients into even pieces.", "tip": "Prep before turning on heat.", "sensory_cue": "Everything clean and ready.", "time": "10 minutes"},
+                {"step": 2, "title": "Heat Oil", "instruction": "Place pan over medium heat 180C/350F. Add oil, heat 60 seconds.", "tip": "Never let oil smoke.", "sensory_cue": "Oil shimmers when ready.", "time": "2 minutes"},
+                {"step": 3, "title": "Cook Aromatics", "instruction": "Add onion and garlic at 160C/320F. Stir every 30 seconds for 3 minutes.", "tip": "Keep stirring to avoid burning.", "sensory_cue": "Sweet fragrant aroma.", "time": "3 minutes"},
+                {"step": 4, "title": "Add Main Ingredients", "instruction": "Add main ingredients at 180C/350F. Cook 5-7 minutes stirring occasionally.", "tip": "Don't overcrowd pan.", "sensory_cue": "Steady sizzle.", "time": "7 minutes"},
                 {"step": 5, "title": "Season and Finish", "instruction": "Add salt, pepper, spices. Stir well. Taste and adjust. Cook 2 more minutes.", "tip": "Season gradually.", "sensory_cue": "Rich spiced aroma.", "time": "2 minutes"},
                 {"step": 6, "title": "Plate and Serve", "instruction": "Transfer to warm plates. Garnish and serve hot.", "tip": "Warm plates keep food hot longer.", "sensory_cue": "Colorful and appetizing.", "time": "2 minutes"}
             ],
@@ -481,80 +440,72 @@ class AIRecipeBrain:
 
     def _fallback_nutrition(self, dish_hint="", ingredients=None):
         dish = dish_hint.lower() if dish_hint else ""
-        ings = str(ingredients or []).lower()
 
-        # Dish-specific nutrition data
-        if any(x in dish for x in ["biryani","pulao"]):
+        if any(x in dish for x in ["biryani", "pulao"]):
             cal,pro,carb,fat,fib,sod = 520,22,65,16,4,680
-            benefits = ["Basmati rice provides quick energy and is easy to digest","Whole spices like cardamom and cloves are rich in antioxidants","Saffron contains anti-inflammatory compounds"]
-            swaps = ["Use brown rice instead of white for more fiber","Reduce ghee by half and use olive oil","Add extra vegetables like peas and carrots for nutrients"]
-            avoid = ["People with gluten sensitivity should check spice blends","Those on low-carb diets due to high rice content"]
+            benefits = ["Basmati rice provides quick energy","Whole spices like cardamom are rich in antioxidants","Saffron contains anti-inflammatory compounds"]
+            swaps = ["Use brown rice for more fiber","Reduce ghee by half","Add vegetables like peas and carrots"]
+            avoid = ["People on low-carb diets","Those with gluten sensitivity should check spice blends"]
             best = "Best enjoyed at lunch when digestion is strongest"
-        elif any(x in dish for x in ["butter chicken","murgh makhani"]):
+        elif any(x in dish for x in ["butter chicken", "murgh makhani"]):
             cal,pro,carb,fat,fib,sod = 420,35,18,25,3,720
-            benefits = ["Chicken is an excellent source of lean protein for muscle repair","Tomatoes provide lycopene which supports heart health","Spices like turmeric have powerful anti-inflammatory effects"]
-            swaps = ["Use Greek yogurt instead of cream to reduce fat","Replace butter with olive oil for heart health","Use skinless chicken breast to lower calories"]
-            avoid = ["Individuals with lactose intolerance due to cream and butter","People on low-sodium diets"]
+            benefits = ["Chicken is an excellent source of lean protein","Tomatoes provide lycopene for heart health","Turmeric has powerful anti-inflammatory effects"]
+            swaps = ["Use Greek yogurt instead of cream","Replace butter with olive oil","Use skinless chicken breast"]
+            avoid = ["Lactose intolerant individuals","People on low-sodium diets"]
             best = "Best enjoyed at dinner with naan or rice"
-        elif any(x in dish for x in ["tikka","masala","korma","curry"]):
+        elif any(x in dish for x in ["tikka", "masala", "korma", "curry"]):
             cal,pro,carb,fat,fib,sod = 380,30,20,22,4,680
-            benefits = ["Spices like cumin and coriander aid digestion","Chicken provides complete protein with all essential amino acids","Ginger and garlic have natural antibacterial properties"]
-            swaps = ["Use coconut milk instead of cream for dairy-free option","Reduce oil by half and add water when cooking","Use more vegetables to increase fiber content"]
-            avoid = ["People with dairy allergies if cream is used","Those with nightshade sensitivity due to tomatoes"]
+            benefits = ["Cumin and coriander aid digestion","Chicken provides complete protein","Ginger and garlic have antibacterial properties"]
+            swaps = ["Use coconut milk instead of cream","Reduce oil by half","Add more vegetables for fiber"]
+            avoid = ["People with dairy allergies","Those with nightshade sensitivity"]
             best = "Best enjoyed at lunch or dinner with flatbread"
-        elif any(x in dish for x in ["pasta","spaghetti","carbonara","lasagna"]):
+        elif any(x in dish for x in ["pasta", "spaghetti", "carbonara", "lasagna"]):
             cal,pro,carb,fat,fib,sod = 580,18,72,22,5,540
-            benefits = ["Pasta provides sustained energy through complex carbohydrates","Tomato sauce is rich in lycopene and vitamin C","Olive oil contains heart-healthy monounsaturated fats"]
-            swaps = ["Use whole wheat pasta for more fiber and nutrients","Replace heavy cream with Greek yogurt","Add spinach or zucchini to boost vegetable content"]
-            avoid = ["People with gluten intolerance or celiac disease","Those on low-carb or keto diets"]
-            best = "Best enjoyed at lunch for sustained afternoon energy"
-        elif any(x in dish for x in ["soup","broth","dal","lentil"]):
+            benefits = ["Pasta provides sustained energy","Tomato sauce is rich in lycopene","Olive oil contains heart-healthy fats"]
+            swaps = ["Use whole wheat pasta for more fiber","Replace cream with Greek yogurt","Add spinach or zucchini"]
+            avoid = ["People with gluten intolerance","Those on low-carb diets"]
+            best = "Best enjoyed at lunch for sustained energy"
+        elif any(x in dish for x in ["soup", "broth", "dal", "lentil"]):
             cal,pro,carb,fat,fib,sod = 180,10,24,5,8,480
-            benefits = ["High fiber content supports healthy digestion","Plant-based protein from lentils is heart-friendly","Low calorie and filling making it ideal for weight management"]
-            swaps = ["Reduce salt and use herbs for flavor instead","Add a squeeze of lemon for extra vitamin C","Use low-sodium broth to reduce sodium content"]
-            avoid = ["People with kidney issues should monitor potassium intake","Those with legume allergies"]
-            best = "Excellent as a light dinner or starter any time of day"
-        elif any(x in dish for x in ["salad","slaw"]):
-            cal,pro,carb,fat,fib,sod = 220,8,18,14,6,320
-            benefits = ["Raw vegetables retain maximum vitamins and minerals","High fiber content promotes healthy digestion","Low calorie and hydrating making it perfect for weight loss"]
-            swaps = ["Use lemon juice instead of dressing to reduce calories","Add chickpeas or grilled chicken for more protein","Replace croutons with nuts for healthy fats"]
-            avoid = ["People on blood thinners should monitor vitamin K from leafy greens","Those with irritable bowel syndrome may need to avoid raw vegetables"]
-            best = "Perfect as a light lunch or side dish"
-        elif any(x in dish for x in ["burger","sandwich","wrap"]):
+            benefits = ["High fiber supports digestion","Plant-based protein is heart-friendly","Low calorie and filling"]
+            swaps = ["Use herbs instead of salt","Add lemon for vitamin C","Use low-sodium broth"]
+            avoid = ["People with kidney issues","Those with legume allergies"]
+            best = "Excellent as a light dinner or starter"
+        elif any(x in dish for x in ["burger", "sandwich", "wrap"]):
             cal,pro,carb,fat,fib,sod = 520,28,42,24,4,860
-            benefits = ["Good source of protein from meat or legumes","Iron and zinc from beef support immune function","Whole grain bun provides fiber and B vitamins"]
-            swaps = ["Use lettuce wrap instead of bun to reduce carbs","Choose lean turkey or chicken patty instead of beef","Add avocado instead of cheese for healthy fats"]
-            avoid = ["People on low-sodium diets due to sauces and processed cheese","Those with gluten intolerance due to bun"]
-            best = "Best enjoyed at lunch for an energizing midday meal"
+            benefits = ["Good protein source","Iron and zinc support immunity","Whole grain bun provides fiber"]
+            swaps = ["Use lettuce wrap instead of bun","Choose lean turkey patty","Add avocado instead of cheese"]
+            avoid = ["People on low-sodium diets","Those with gluten intolerance"]
+            best = "Best enjoyed at lunch"
         elif any(x in dish for x in ["pizza"]):
             cal,pro,carb,fat,fib,sod = 480,20,55,18,4,780
-            benefits = ["Tomato sauce provides lycopene a powerful antioxidant","Cheese delivers calcium for strong bones and teeth","Whole grain crust adds fiber and essential minerals"]
-            swaps = ["Use cauliflower crust for a low-carb alternative","Reduce cheese and add more vegetables as toppings","Use part-skim mozzarella to lower saturated fat"]
-            avoid = ["People with lactose intolerance due to cheese","Those with gluten sensitivity due to wheat crust"]
-            best = "Best enjoyed at dinner as a sharing meal"
-        elif any(x in dish for x in ["shawarma","kebab"]):
+            benefits = ["Tomato sauce provides lycopene","Cheese delivers calcium","Whole grain crust adds fiber"]
+            swaps = ["Use cauliflower crust for low-carb","Reduce cheese","Use part-skim mozzarella"]
+            avoid = ["Lactose intolerant individuals","Those with gluten sensitivity"]
+            best = "Best enjoyed at dinner"
+        elif any(x in dish for x in ["shawarma", "kebab"]):
             cal,pro,carb,fat,fib,sod = 450,35,30,18,3,820
-            benefits = ["High protein from grilled meat supports muscle growth","Garlic and herbs provide natural antimicrobial benefits","Spices like cumin and paprika are rich in antioxidants"]
-            swaps = ["Use whole wheat pita instead of white for more fiber","Add more salad vegetables for vitamins and minerals","Use low-fat yogurt sauce instead of tahini to reduce calories"]
-            avoid = ["People on low-sodium diets due to marinades and sauces","Those with gluten sensitivity should avoid pita bread"]
-            best = "Great as a satisfying lunch or post-workout dinner"
-        elif any(x in dish for x in ["naan","roti","paratha","bread"]):
+            benefits = ["High protein supports muscle growth","Garlic has antimicrobial benefits","Spices are rich in antioxidants"]
+            swaps = ["Use whole wheat pita","Add more salad vegetables","Use low-fat yogurt sauce"]
+            avoid = ["People on low-sodium diets","Those with gluten sensitivity"]
+            best = "Great as lunch or post-workout dinner"
+        elif any(x in dish for x in ["naan", "roti", "paratha", "bread"]):
             cal,pro,carb,fat,fib,sod = 300,8,48,10,3,420
-            benefits = ["Provides quick energy from carbohydrates","Contains B vitamins essential for energy metabolism","Pairs well with protein-rich dishes for balanced nutrition"]
-            swaps = ["Use whole wheat flour for more fiber and nutrients","Reduce butter or ghee topping by half","Try baking instead of frying for lower fat content"]
-            avoid = ["People with gluten intolerance or celiac disease","Those on low-carb or keto diets"]
+            benefits = ["Quick energy from carbohydrates","Contains B vitamins","Pairs well with protein dishes"]
+            swaps = ["Use whole wheat flour","Reduce butter topping","Try baking instead of frying"]
+            avoid = ["People with gluten intolerance","Those on low-carb diets"]
             best = "Best enjoyed fresh at lunch or dinner"
-        elif any(x in dish for x in ["rice","pulao","fried rice"]):
+        elif any(x in dish for x in ["rice", "fried rice"]):
             cal,pro,carb,fat,fib,sod = 400,10,75,8,2,480
-            benefits = ["Provides quick energy from easily digestible carbohydrates","Gluten-free and suitable for most dietary needs","Fortified with B vitamins supporting energy metabolism"]
-            swaps = ["Use cauliflower rice for a low-carb alternative","Add vegetables like peas and carrots for more nutrition","Use brown rice for significantly more fiber"]
-            avoid = ["People with diabetes should monitor portion sizes","Those on strict low-carb diets"]
-            best = "Best enjoyed at lunch for sustained afternoon energy"
+            benefits = ["Quick energy from carbohydrates","Gluten-free","Contains B vitamins"]
+            swaps = ["Use cauliflower rice for low-carb","Add vegetables for nutrition","Use brown rice for more fiber"]
+            avoid = ["People with diabetes should monitor portions","Those on strict low-carb diets"]
+            best = "Best enjoyed at lunch"
         else:
             cal,pro,carb,fat,fib,sod = 380,18,40,14,5,520
-            benefits = ["Provides a balanced mix of macronutrients for sustained energy","Contains essential vitamins and minerals for overall health","Homemade meals are lower in preservatives than processed food"]
-            swaps = ["Reduce oil or butter by half to lower calorie content","Add more vegetables to increase fiber and vitamin intake","Use herbs and spices instead of salt for flavoring"]
-            avoid = ["Check all ingredients for personal food allergies","Consult a nutritionist for specific dietary requirements"]
+            benefits = ["Balanced macronutrients for sustained energy","Essential vitamins and minerals","Lower in preservatives than processed food"]
+            swaps = ["Reduce oil by half","Add more vegetables","Use herbs instead of salt"]
+            avoid = ["Check all ingredients for personal allergies","Consult a nutritionist for specific requirements"]
             best = "Best enjoyed fresh as part of a balanced meal"
 
         return {
@@ -568,4 +519,3 @@ class AIRecipeBrain:
             "healthy_swaps": swaps,
             "best_time_to_eat": best
         }
-        
