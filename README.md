@@ -1,5 +1,5 @@
 #  Gargeyi's Chromodynamics Café
-### Where Quantum Physics Meets Culinary Art
+
 
 Gargeyi's Chromodynamics Café is an intelligent recipe generation system that combines **Quantum Computing** and **Large Language Models (LLMs)** to create highly personalized, restaurant-quality recipes.
 
