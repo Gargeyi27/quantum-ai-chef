@@ -5,9 +5,9 @@ Advanced AI Recipe Brain - Hybrid Quantum-AI System
 import json
 import os
 from typing import List, Dict, Optional
-from groq import Groq
+import os`nfrom groq import Groq
 
-client = Groq(api_key="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")
+client = Groq(api_key="os.environ.get("GROQ_API_KEY")")
 
 
 CUISINE_KNOWLEDGE = {
