@@ -5,9 +5,12 @@ Advanced AI Recipe Brain - Hybrid Quantum-AI System
 import json
 import os
 from typing import List, Dict, Optional
-import os`nfrom groq import Groq
+import os
+from dotenv import load_dotenv
+from groq import Groq
+load_dotenv()
 
-client = Groq(api_key="os.environ.get("GROQ_API_KEY")")
+client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
 
 CUISINE_KNOWLEDGE = {
@@ -510,6 +513,8 @@ class AIRecipeBrain:
             "healthy_swaps": swaps,
             "best_time_to_eat": best
         }
+
+
 
 
 
