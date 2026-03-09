@@ -14,29 +14,29 @@ st.markdown("""
 * { font-family: 'DM Sans', sans-serif; }
 h1, h2, h3 { font-family: 'Playfair Display', serif; }
 .stButton>button {
-    background: linear-gradient(135deg, #c0392b, #8e44ad);
+    background: linear-gradient(135deg, #885133, #d62300);
     color: white; border: none; border-radius: 10px;
     padding: 0.5rem 2rem; font-size: 1.1rem; font-weight: bold; width: 100%;
 }
 .recipe-box {
-    background: #1e2130; border-radius: 15px; padding: 1.5rem;
-    margin: 0.5rem 0; border-left: 4px solid #e74c3c;
+    background: #f4f0ec; border-radius: 15px; padding: 1.5rem;
+    margin: 0.5rem 0; border-left: 4px solid #d62300;
 }
 .ing-box {
-    background: #1a1f2e; border-radius: 10px; padding: 0.8rem 1rem;
+    background: #f0e6d7; border-radius: 10px; padding: 0.8rem 1rem;
     margin: 0.3rem 0; border-left: 3px solid #27ae60;
 }
 .shop-item {
-    background: #1a1f2e; border-radius: 8px; padding: 0.6rem 1rem;
+    background: #f0e6d7; border-radius: 8px; padding: 0.6rem 1rem;
     margin: 0.2rem 0; border-left: 3px solid #f39c12;
 }
 .meal-card {
-    background: #1e2130; border-radius: 12px; padding: 1rem;
-    margin: 0.3rem; border-top: 3px solid #8e44ad; text-align: center;
+    background: #f4f0ec; border-radius: 12px; padding: 1rem;
+    margin: 0.3rem; border-top: 3px solid #885133; text-align: center;
     min-height: 100px;
 }
 .sub-box {
-    background: #1a1f2e; border-radius: 10px; padding: 1rem;
+    background: #f0e6d7; border-radius: 10px; padding: 1rem;
     margin: 0.3rem 0; border-left: 3px solid #3498db;
 }
 </style>
@@ -508,3 +508,4 @@ with tab3:
         if st.button("Clear All History"):
             st.session_state.recipe_history = []
             st.rerun()
+
