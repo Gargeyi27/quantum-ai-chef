@@ -4,7 +4,7 @@ import json
 import random
 from datetime import datetime
 
-API_URL = "http://localhost:8001"
+API_URL = "http://localhost:8002"
 
 st.set_page_config(page_title="Gargeyi's Chromodynamics Cafe", page_icon="⚛️", layout="wide")
 
@@ -163,7 +163,7 @@ with tab1:
                     st.error("API Error " + str(response.status_code) + ": " + response.text)
 
             except requests.exceptions.ConnectionError:
-                st.error("Cannot connect to backend! Start uvicorn on port 8000.")
+                st.error("Cannot connect to backend! Start uvicorn on port 8002.")
             except Exception as e:
                 st.error("Error: " + str(e))
 
