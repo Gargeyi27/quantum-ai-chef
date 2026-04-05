@@ -147,6 +147,7 @@ with tab1:
 
                 if response.status_code == 200:
                     result = response.json()
+                    print(f"DEBUG: Frontend received 200 OK for {dish}")
                     d = result.get("data", {})
                     recipe = d.get("recipe", {})
                     nutrition = d.get("nutrition", {})
@@ -170,7 +171,12 @@ with tab1:
                         "nutrition": nutrition,
                         "rating": 0
                     })
-                    st.rerun()
+                    # Compatibility fix: use st.experimental_rerun() for older versions or st.rerun() for newer
+                    print("DEBUG: Setting recipe_ready = True and refreshing...")
+                    try:
+                        st.rerun()
+                    except AttributeError:
+                        st.experimental_rerun()
                 else:
                     st.error("API Error " + str(response.status_code) + ": " + response.text)
 
@@ -365,7 +371,7 @@ with tab1:
                 u.rate = rate;
                 u.pitch = pitch;
                 u.volume = 1.0;
-                u.lang = '" + selected_lang + "';
+                u.lang = 'en-US';
                 // Try to pick matching gender voice
                 var gender = '""" + selected_voice["gender"] + """';
                 var preferred = voices.filter(function(v) {
