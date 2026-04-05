@@ -141,10 +141,10 @@ def chef_agent_prompt(dish_hint, cuisine1, cuisine2, veg, ingredients, is_fusion
         f"BASE INGREDIENTS: {quantum_ingredients}\n"
         f"{fusion_note}\n"
         "=== MANDATORY RULES ===\n"
-        "1. List EXACTLY 25 real ingredients specific to this dish. Split every spice separately.\n"
-        "2. Write EXACTLY 15 cooking steps specific to this dish.\n"
+        "1. List EXACTLY 15 real ingredients specific to this dish. Split every spice separately.\n"
+        "2. Write EXACTLY 8 cooking steps specific to this dish.\n"
         "3. Every ingredient needs exact amount and prep note.\n"
-        "4. Every step needs exact temp (C and F), exact time, technique, why it matters, what can go wrong.\n"
+        "4. Every step needs exact temp (C and F), technique, why it matters, what can go wrong.\n"
         "5. RESPOND ONLY WITH VALID JSON. No markdown, no text outside JSON.\n\n"
         "{\n"
         f'  "dish_name": "Authentic name for {dish_hint}",\n'
@@ -263,9 +263,9 @@ def teacher_agent_prompt(cooking_steps, skill_level):
 class AIRecipeBrain:
     def __init__(self):
         self.models = [
-            "meta-llama/llama-3.1-8b-instruct:free",
-            "mistralai/mistral-7b-instruct:free",
-            "google/gemma-2-9b-it:free",
+            "llama-3.1-8b-instant",
+            "llama-3.1-70b-versatile",
+            "gemma2-9b-it"
         ]
         self.model = self.models[0]
 
@@ -356,14 +356,15 @@ class AIRecipeBrain:
         try:
             prompt = chef_agent_prompt(dish_hint, cuisine1, cuisine2, veg, ingredients, is_fusion, skill_level)
             print("DEBUG: Prompt OK, length:", len(prompt))
-            raw = self._call_groq(prompt, max_tokens=12000)
-            print("DEBUG: Response length:", len(raw))
-            print("DEBUG: First 200 chars:", raw[:200])
+            raw = self._call_groq(prompt, max_tokens=4000)
+            # print("DEBUG: Response length:", len(raw))
             recipe = self._parse_json(raw)
             if not recipe:
-                print("WARNING: JSON parse failed. Raw:", raw[:500])
+                # print("WARNING: JSON parse failed. Raw:", raw[:500])
+                pass
             else:
-                print("DEBUG: ingredients:", len(recipe.get("ingredients", [])), "steps:", len(recipe.get("cooking_steps", [])))
+                # print("DEBUG: ingredients:", len(recipe.get("ingredients", [])), "steps:", len(recipe.get("cooking_steps", [])))
+                pass
         except Exception as e:
             import traceback
             print("ERROR in chef agent:", str(e))
@@ -394,21 +395,16 @@ class AIRecipeBrain:
             nutrition = self._fallback_nutrition(dish_hint=dish_hint, ingredients=ingredients)
 
         simple_steps = []
+        # Skill level is already handled in the main chef prompt. 
+        # Disabling redundant teacher call to speed up performance.
+        """
         if skill_level == "Beginner":
             try:
-                prompt3 = teacher_agent_prompt(recipe.get("cooking_steps", []), skill_level)
-                raw3 = self._call_groq(prompt3, max_tokens=2000)
-                raw3 = raw3.strip()
-                if "```json" in raw3:
-                    raw3 = raw3.split("```json")[1].split("```")[0].strip()
-                elif "```" in raw3:
-                    raw3 = raw3.split("```")[1].split("```")[0].strip()
-                start = raw3.find('[')
-                end = raw3.rfind(']') + 1
-                if start >= 0:
-                    simple_steps = json.loads(raw3[start:end])
+                # ... skipping second AI call ...
+                pass
             except Exception:
                 simple_steps = []
+        """
 
         return {
             "recipe": recipe,
