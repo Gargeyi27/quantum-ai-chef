@@ -111,6 +111,18 @@ with tab1:
         selected_voice_name = st.selectbox("Select Voice", list(voice_options.keys()), key="voice_select")
     selected_voice = voice_options[selected_voice_name]
     st.markdown("---")
+    
+    # Backend Health Check in Sidebar
+    st.sidebar.markdown("### 🛠️ System Status")
+    try:
+        health_resp = requests.get(API_URL + "/health", timeout=3)
+        if health_resp.status_code == 200:
+            st.sidebar.success("✅ Backend Connected")
+        else:
+            st.sidebar.error("❌ Backend Error: " + str(health_resp.status_code))
+    except Exception:
+        st.sidebar.error("❌ Backend Unreachable (8002)")
+        st.sidebar.info("Tip: Make sure the FastAPI server is running on the same EC2 instance.")
 
     if st.button("⚛️ Generate Recipe with Quantum AI"):
         with st.spinner("⚛️ Quantum algorithms optimizing... 🤖 AI Chef crafting your recipe..."):

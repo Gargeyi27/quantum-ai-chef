@@ -4,10 +4,23 @@ Advanced AI Recipe Brain - Hybrid Quantum-AI System
 
 import json
 import os
+import random
 from typing import List, Dict, Optional
 from groq import Groq
 
-client = Groq(api_key="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")
+# Support multiple Groq API keys for high availability
+API_KEYS = os.environ.get("GROQ_API_KEYS", "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").split(",")
+
+def get_live_models(api_key: str):
+    """Fallback models if specific ones fail"""
+    return [
+        "llama-3.1-70b-versatile",
+        "llama-3.1-8b-instant",
+        "mixtral-8x7b-32768",
+        "gemma2-9b-it"
+    ]
+
+client = Groq(api_key=API_KEYS[0])
 
 
 CUISINE_KNOWLEDGE = {
@@ -256,10 +269,16 @@ class AIRecipeBrain:
         ]
         self.model = self.models[0]
 
-    def _call_groq(self, prompt, max_tokens=6000):
+    def _call_groq(self, prompt, max_tokens=4096):
         messages = [{"role": "user", "content": prompt}]
         last_error = None
-        for api_key in API_KEYS:
+        
+        # Shuffle keys for basic load balancing
+        keys = API_KEYS.copy()
+        random.shuffle(keys)
+        
+        for api_key in keys:
+            if not api_key: continue
             models = get_live_models(api_key)
             groq_client = Groq(api_key=api_key)
             for model in models:
@@ -267,16 +286,19 @@ class AIRecipeBrain:
                     response = groq_client.chat.completions.create(
                         model=model,
                         max_tokens=max_tokens,
-                        messages=messages
+                        messages=messages,
+                        temperature=0.3
                     )
-                    print(f"Success with key ...{api_key[-6:]} model: {model}")
+                    # print(f"DEBUG: Success with key ...{api_key[-4:]} model: {model}")
                     return response.choices[0].message.content
                 except Exception as e:
-                    err = str(e)[:80]
-                    print(f"Key ...{api_key[-6:]} Model {model} failed: {err}")
+                    err = str(e)
+                    # print(f"DEBUG: Key ...{api_key[-4:]} Model {model} failed: {err[:60]}")
                     last_error = e
                     continue
-        raise last_error
+        if last_error:
+            raise last_error
+        raise Exception("All Groq API keys and models failed.")
 
     def _parse_json(self, text):
         text = text.strip()
