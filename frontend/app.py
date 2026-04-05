@@ -225,7 +225,9 @@ with tab1:
                     if photos:
                         img_url = photos[0]["src"]["large"]
                         photographer = photos[0]["photographer"]
-                        st.image(img_url, caption=f"📸 Photo by {photographer} on Pexels")
+                        # Use raw HTML to force the BROWSER to download the image, not the Streamlit server
+                        st.markdown(f'<img src="{img_url}" style="width:100%;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,0.5);" />', unsafe_allow_html=True)
+                        st.caption(f"📸 Photo by {photographer} on Pexels")
             except Exception:
                 pass
         else:
