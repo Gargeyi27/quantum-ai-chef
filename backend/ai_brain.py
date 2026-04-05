@@ -283,17 +283,19 @@ class AIRecipeBrain:
             groq_client = Groq(api_key=api_key)
             for model in models:
                 try:
+                    print(f"DEBUG: Attempting AI generation with key ...{api_key[-4:]} model: {model}")
                     response = groq_client.chat.completions.create(
                         model=model,
                         max_tokens=max_tokens,
                         messages=messages,
-                        temperature=0.3
+                        temperature=0.3,
+                        timeout=15.0
                     )
-                    # print(f"DEBUG: Success with key ...{api_key[-4:]} model: {model}")
+                    print(f"DEBUG: Success! Key ...{api_key[-4:]} responded.")
                     return response.choices[0].message.content
                 except Exception as e:
                     err = str(e)
-                    # print(f"DEBUG: Key ...{api_key[-4:]} Model {model} failed: {err[:60]}")
+                    print(f"DEBUG: Key ...{api_key[-4:]} failed/timed out: {err[:60]}")
                     last_error = e
                     continue
         if last_error:
