@@ -208,24 +208,24 @@ with tab1:
         if tagline:
             st.markdown("*" + tagline + "*")
 
-        # Dish image using Pexels API (Non-blocking)
+        # Dish image using Pexels API (Ultra-Fast/Non-blocking)
         user_dish = st.session_state.get("last_dish", dish_name)
         if st.checkbox("🖼️ Show Dish Image", value=True):
             try:
-                import requests as req, base64
+                import requests as req
                 pexels_key = "Qo5UbnliTuhsVKamqEOcRITecVHcHtEfUXGLwPzaIialDQX703rp6Qu5"
                 query = str(user_dish) + " food"
                 resp = req.get(
                     "https://api.pexels.com/v1/search?query=" + query + "&per_page=1&orientation=landscape",
                     headers={"Authorization": pexels_key},
-                    timeout=5
+                    timeout=3
                 )
                 if resp.status_code == 200:
                     photos = resp.json().get("photos", [])
                     if photos:
                         img_url = photos[0]["src"]["large"]
                         photographer = photos[0]["photographer"]
-                        st.image(img_url, caption=f"📸 Photo by {photographer} on Pexels", use_column_width=True)
+                        st.image(img_url, caption=f"📸 Photo by {photographer} on Pexels")
             except Exception:
                 pass
         else:
