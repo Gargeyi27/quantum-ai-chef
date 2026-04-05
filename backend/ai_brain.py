@@ -5,12 +5,9 @@ Advanced AI Recipe Brain - Hybrid Quantum-AI System
 import json
 import os
 from typing import List, Dict, Optional
-import os
-from dotenv import load_dotenv
 from groq import Groq
-load_dotenv()
 
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+client = Groq(api_key="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")
 
 
 CUISINE_KNOWLEDGE = {
@@ -253,29 +250,32 @@ def teacher_agent_prompt(cooking_steps, skill_level):
 class AIRecipeBrain:
     def __init__(self):
         self.models = [
-            "llama-3.3-70b-versatile",
-            "llama-3.1-8b-instant",
-            "mixtral-8x7b-32768",
+            "meta-llama/llama-3.1-8b-instruct:free",
+            "mistralai/mistral-7b-instruct:free",
+            "google/gemma-2-9b-it:free",
         ]
         self.model = self.models[0]
 
-    def _call_groq(self, prompt, max_tokens=12000):
+    def _call_groq(self, prompt, max_tokens=6000):
         messages = [{"role": "user", "content": prompt}]
         last_error = None
-        for model in self.models:
-            try:
-                response = client.chat.completions.create(
-                    model=model,
-                    max_tokens=max_tokens,
-                    messages=messages
-                )
-                if model != self.models[0]:
-                    print(f"Used fallback model: {model}")
-                return response.choices[0].message.content
-            except Exception as e:
-                print(f"Model {model} failed: {str(e)[:80]}, trying next...")
-                last_error = e
-                continue
+        for api_key in API_KEYS:
+            models = get_live_models(api_key)
+            groq_client = Groq(api_key=api_key)
+            for model in models:
+                try:
+                    response = groq_client.chat.completions.create(
+                        model=model,
+                        max_tokens=max_tokens,
+                        messages=messages
+                    )
+                    print(f"Success with key ...{api_key[-6:]} model: {model}")
+                    return response.choices[0].message.content
+                except Exception as e:
+                    err = str(e)[:80]
+                    print(f"Key ...{api_key[-6:]} Model {model} failed: {err}")
+                    last_error = e
+                    continue
         raise last_error
 
     def _parse_json(self, text):
@@ -513,6 +513,13 @@ class AIRecipeBrain:
             "healthy_swaps": swaps,
             "best_time_to_eat": best
         }
+
+
+
+
+
+
+
 
 
 
