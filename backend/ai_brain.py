@@ -10,8 +10,8 @@ API_KEYS = os.environ.get("GROQ_API_KEYS", "").split(",")
 def get_live_models(api_key: str):
     """Latest supported Groq models (2024-2025)"""
     return [
-        "llama-3.1-8b-instant",
         "llama-3.3-70b-versatile",
+        "llama-3.1-8b-instant",
         "llama3-70b-8192",
         "llama3-8b-8192"
     ]
@@ -79,15 +79,17 @@ class AIRecipeBrain:
             models = get_live_models(api_key)
             for model in models:
                 try:
-                    print(f"DEBUG: Attempting AI generation with key ...{api_key[-4:]} model: {model}")
+                    # Fast-fail for the large models to avoid long buffering
+                    current_timeout = 8.0 if "70b" in model else 15.0
+                    
                     response = groq_client.chat.completions.create(
                         model=model,
                         max_tokens=max_tokens,
                         messages=[{"role": "user", "content": prompt}],
                         temperature=0.3,
-                        timeout=15.0
+                        timeout=current_timeout
                     )
-                    print(f"DEBUG: Success! Key ...{api_key[-4:]} responded.")
+                    print(f"DEBUG: AI DONE! Success! Key ...{api_key[-4:]} responded.")
                     return response.choices[0].message.content
                 except Exception as e:
                     err = str(e)

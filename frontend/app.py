@@ -6,6 +6,14 @@ from datetime import datetime
 
 API_URL = "http://localhost:8002"
 
+@st.cache_data(ttl=60)
+def check_backend_health(url):
+    try:
+        resp = requests.get(url + "/health", timeout=2)
+        return resp.status_code == 200
+    except Exception:
+        return False
+
 st.set_page_config(page_title="Gargeyi's Chromodynamics Cafe", page_icon="⚛️", layout="wide")
 
 st.markdown("""
@@ -112,15 +120,12 @@ with tab1:
     selected_voice = voice_options[selected_voice_name]
     st.markdown("---")
     
-    # Backend Health Check in Sidebar
+    # Backend Health Check in Sidebar (Cached for 60s)
     st.sidebar.markdown("### 🛠️ System Status")
-    try:
-        health_resp = requests.get(API_URL + "/health", timeout=3)
-        if health_resp.status_code == 200:
-            st.sidebar.success("✅ Backend Connected")
-        else:
-            st.sidebar.error("❌ Backend Error: " + str(health_resp.status_code))
-    except Exception:
+    is_healthy = check_backend_health(API_URL)
+    if is_healthy:
+        st.sidebar.success("✅ Backend Connected")
+    else:
         st.sidebar.error("❌ Backend Unreachable (8002)")
         st.sidebar.info("Tip: Make sure the FastAPI server is running on the same EC2 instance.")
 
@@ -208,30 +213,31 @@ with tab1:
         if tagline:
             st.markdown("*" + tagline + "*")
 
-        # Dish image using Pexels API (Ultra-Fast/Non-blocking)
+        # Dish image using Pexels API (On-demand for speed)
         user_dish = st.session_state.get("last_dish", dish_name)
-        if st.checkbox("🖼️ Show Dish Image", value=True):
+        if st.button("🖼️ Generate Food Image"):
             try:
                 import requests as req
                 pexels_key = "Qo5UbnliTuhsVKamqEOcRITecVHcHtEfUXGLwPzaIialDQX703rp6Qu5"
                 query = str(user_dish) + " food"
-                resp = req.get(
-                    "https://api.pexels.com/v1/search?query=" + query + "&per_page=1&orientation=landscape",
-                    headers={"Authorization": pexels_key},
-                    timeout=3
-                )
-                if resp.status_code == 200:
-                    photos = resp.json().get("photos", [])
-                    if photos:
-                        img_url = photos[0]["src"]["large"]
-                        photographer = photos[0]["photographer"]
-                        # Use raw HTML to force the BROWSER to download the image, not the Streamlit server
-                        st.markdown(f'<img src="{img_url}" style="width:100%;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,0.5);" />', unsafe_allow_html=True)
-                        st.caption(f"📸 Photo by {photographer} on Pexels")
+                with st.spinner("🖼️ Finding dish inspiration..."):
+                    resp = req.get(
+                        "https://api.pexels.com/v1/search?query=" + query + "&per_page=1&orientation=landscape",
+                        headers={"Authorization": pexels_key},
+                        timeout=5
+                    )
+                    if resp.status_code == 200:
+                        photos = resp.json().get("photos", [])
+                        if photos:
+                            img_url = photos[0]["src"]["large"]
+                            photographer = photos[0]["photographer"]
+                            # Use raw HTML to force the BROWSER to download the image, not the Streamlit server
+                            st.markdown(f'<img src="{img_url}" style="width:100%;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,0.5);" />', unsafe_allow_html=True)
+                            st.caption(f"📸 Photo by {photographer} on Pexels")
             except Exception:
-                pass
+                st.error("Could not load image. Please try again.")
         else:
-            st.caption("🍽️ " + dish_name)
+            st.info("💡 Tip: Click 'Generate Food Image' above to see a preview of this dish.")
         col_a, col_b, col_c, col_d, col_e = st.columns(5)
         col_a.metric("⏱️ Prep", recipe.get("prep_time", "N/A"))
         col_b.metric("🔥 Cook", recipe.get("cook_time", "N/A"))
