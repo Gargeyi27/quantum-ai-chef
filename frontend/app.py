@@ -197,34 +197,27 @@ with tab1:
         if tagline:
             st.markdown("*" + tagline + "*")
 
-        # Dish image using Pexels API
-        try:
-            import requests as req, base64
-            pexels_key = "Qo5UbnliTuhsVKamqEOcRITecVHcHtEfUXGLwPzaIialDQX703rp6Qu5"
-            user_dish = st.session_state.get("last_dish", dish_name)
-            query = str(user_dish) + " food"
-            with st.spinner("🖼️ Loading dish image..."):
+        # Dish image using Pexels API (Non-blocking)
+        user_dish = st.session_state.get("last_dish", dish_name)
+        if st.checkbox("🖼️ Show Dish Image", value=True):
+            try:
+                import requests as req, base64
+                pexels_key = "Qo5UbnliTuhsVKamqEOcRITecVHcHtEfUXGLwPzaIialDQX703rp6Qu5"
+                query = str(user_dish) + " food"
                 resp = req.get(
                     "https://api.pexels.com/v1/search?query=" + query + "&per_page=1&orientation=landscape",
                     headers={"Authorization": pexels_key},
-                    timeout=10
+                    timeout=5
                 )
-            if resp.status_code == 200:
-                photos = resp.json().get("photos", [])
-                if photos:
-                    img_url = photos[0]["src"]["large"]
-                    photographer = photos[0]["photographer"]
-                    img_resp = req.get(img_url, timeout=15)
-                    if img_resp.status_code == 200:
-                        b64 = base64.b64encode(img_resp.content).decode()
-                        st.markdown(
-                            '<div style="text-align:center;margin:1rem 0;">' +
-                            '<img src="data:image/jpeg;base64,' + b64 + '" ' +
-                            'style="width:100%;max-width:750px;border-radius:15px;box-shadow:0 6px 25px rgba(0,0,0,0.6);" />' +
-                            '<p style="color:#888;font-size:0.8rem;margin-top:0.4rem;">📸 Photo by ' + photographer + ' on Pexels</p></div>',
-                            unsafe_allow_html=True
-                        )
-        except Exception:
+                if resp.status_code == 200:
+                    photos = resp.json().get("photos", [])
+                    if photos:
+                        img_url = photos[0]["src"]["large"]
+                        photographer = photos[0]["photographer"]
+                        st.image(img_url, caption=f"📸 Photo by {photographer} on Pexels", use_column_width=True)
+            except Exception:
+                pass
+        else:
             st.caption("🍽️ " + dish_name)
         col_a, col_b, col_c, col_d, col_e = st.columns(5)
         col_a.metric("⏱️ Prep", recipe.get("prep_time", "N/A"))
