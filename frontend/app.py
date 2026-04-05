@@ -124,6 +124,14 @@ with tab1:
         st.sidebar.error("❌ Backend Unreachable (8002)")
         st.sidebar.info("Tip: Make sure the FastAPI server is running on the same EC2 instance.")
 
+    if st.sidebar.checkbox("🔍 Show Debug Console"):
+        st.sidebar.markdown("---")
+        st.sidebar.write(f"**API URL:** `{API_URL}`")
+        if st.session_state.get('recipe_ready'):
+            st.sidebar.write("✅ Last Recipe: Ready")
+        else:
+            st.sidebar.write("⏳ Waiting for generation...")
+
     if st.button("⚛️ Generate Recipe with Quantum AI"):
         with st.spinner("⚛️ Quantum algorithms optimizing... 🤖 AI Chef crafting your recipe..."):
             try:
@@ -147,7 +155,6 @@ with tab1:
 
                 if response.status_code == 200:
                     result = response.json()
-                    print(f"DEBUG: Frontend received 200 OK for {dish}")
                     d = result.get("data", {})
                     recipe = d.get("recipe", {})
                     nutrition = d.get("nutrition", {})
@@ -171,8 +178,6 @@ with tab1:
                         "nutrition": nutrition,
                         "rating": 0
                     })
-                    # Compatibility fix: use st.experimental_rerun() for older versions or st.rerun() for newer
-                    print("DEBUG: Setting recipe_ready = True and refreshing...")
                     try:
                         st.rerun()
                     except AttributeError:

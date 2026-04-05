@@ -9,7 +9,7 @@ from typing import List, Dict, Optional
 from groq import Groq
 
 # Support multiple Groq API keys for high availability
-API_KEYS = os.environ.get("GROQ_API_KEYS", "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").split(",")
+API_KEYS = os.environ.get("GROQ_API_KEYS", "").split(",")
 
 def get_live_models(api_key: str):
     """Latest supported Groq models (2024-2025)"""
@@ -204,7 +204,7 @@ def chef_agent_prompt(dish_hint, cuisine1, cuisine2, veg, ingredients, is_fusion
         '  "variations": ["variation 1", "variation 2", "variation 3"],\n'
         '  "substitutions": [{"original": "ingredient", "substitute": "alternative", "flavor_impact": "how taste changes"}],\n'
         '  "nutrition": {\n'
-        '    "per_serving": {"calories": 0, "protein_g": 0, "carbs_g": 0, "fat_g": 0, "fiber_g": 0, "sodium_mg": 0},\n'
+        '    "per_serving": {"calories": 400, "protein_g": 25, "carbs_g": 30, "fat_g": 15, "fiber_g": 4, "sodium_mg": 600},\n'
         '    "health_benefits": ["benefit1", "benefit2", "benefit3"],\n'
         '    "who_should_avoid": ["restriction1", "restriction2"],\n'
         '    "dietary_tags": ["tag1", "tag2"],\n'
@@ -376,24 +376,11 @@ class AIRecipeBrain:
         if not recipe:
             recipe = self._fallback_recipe(dish_hint, cuisine1, ingredients)
 
-        nutrition = recipe.pop("nutrition", {}) if isinstance(recipe, dict) else {}
-        per_s = nutrition.get("per_serving", {}) if isinstance(nutrition, dict) else {}
-        cal = per_s.get("calories", 0)
-        if not nutrition or not isinstance(nutrition, dict) or not per_s or not isinstance(cal, (int, float)) or cal == 0:
-            try:
-                ing_names = [i.get("name", i) if isinstance(i, dict) else i for i in recipe.get("ingredients", ingredients)]
-                prompt2 = nutrition_agent_prompt(recipe.get("dish_name", dish_hint), ing_names)
-                raw2 = self._call_groq(prompt2, max_tokens=1500)
-                nutrition = self._parse_json(raw2)
-            except Exception:
-                nutrition = {}
-
-        if not nutrition or isinstance(nutrition, list):
-            nutrition = self._fallback_nutrition(dish_hint=dish_hint, ingredients=ingredients)
-        if not isinstance(nutrition.get("per_serving"), dict):
-            nutrition = self._fallback_nutrition(dish_hint=dish_hint, ingredients=ingredients)
-        cal_val = nutrition.get("per_serving", {}).get("calories", 0)
-        if not isinstance(cal_val, (int, float)) or cal_val == 0:
+        # Use nutrition from the main recipe JSON if available
+        nutrition = recipe.get("nutrition", {})
+        
+        # Verify nutrition is complete, otherwise use fallback (don't do a second slow call)
+        if not nutrition or not isinstance(nutrition, dict) or not nutrition.get("per_serving"):
             nutrition = self._fallback_nutrition(dish_hint=dish_hint, ingredients=ingredients)
 
         simple_steps = []

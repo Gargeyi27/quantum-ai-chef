@@ -11,24 +11,32 @@ if [ ! -d "venv" ]; then
     python3 -m venv venv
 fi
 
+# 2. Check for .env file and load it
+if [ -f .env ]; then
+    echo "🔑 Loading environment variables from .env..."
+    export $(grep -v '^#' .env | xargs)
+fi
+
 source venv/bin/activate
 
-# 2. Install/Update Dependencies
+# 3. Install/Update Dependencies
 echo "📥 Installing dependencies from requirements.txt..."
 pip install --upgrade pip
 pip install -r requirements.txt
 
-# 3. Check for GROQ_API_KEYS
+# 4. Check for GROQ_API_KEYS
 if [ -z "$GROQ_API_KEYS" ]; then
     echo "⚠️  WARNING: GROQ_API_KEYS environment variable is not set."
     echo "Please set it using: export GROQ_API_KEYS='key1,key2,key3,key4,key5'"
-    # Fallback to the one in ai_brain.py if available, or ask
+    echo "Or add it to your .env file."
 fi
 
-# 4. Kill existing processes on ports 8002 and 8501
+# 5. Kill existing processes on ports 8002 and 8501
 echo "🧹 Cleaning up existing processes..."
 fuser -k 8002/tcp 2>/dev/null
-fuser -k 8501/tcp 2>/dev/null
+pkill -f uvicorn 2>/dev/null
+pkill -f streamlit 2>/dev/null
+sleep 2
 
 # 5. Start Backend (FastAPI)
 echo "🔥 Starting Backend on port 8002..."
