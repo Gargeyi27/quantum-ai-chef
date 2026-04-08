@@ -4,15 +4,7 @@ import json
 import random
 from datetime import datetime
 
-API_URL = "http://localhost:8002"
-
-@st.cache_data(ttl=60)
-def check_backend_health(url):
-    try:
-        resp = requests.get(url + "/health", timeout=2)
-        return resp.status_code == 200
-    except Exception:
-        return False
+API_URL = "http://localhost:8001"
 
 st.set_page_config(page_title="Gargeyi's Chromodynamics Cafe", page_icon="⚛️", layout="wide")
 
@@ -32,11 +24,11 @@ h1, h2, h3 { font-family: 'Playfair Display', serif; }
 }
 .ing-box {
     background: #f0e6d7; border-radius: 10px; padding: 0.8rem 1rem;
-    margin: 0.3rem 0; border-left: 3px solid #27ae60;
+    margin: 0.3rem 0; border-left: 3px solid #885133;
 }
 .shop-item {
     background: #f0e6d7; border-radius: 8px; padding: 0.6rem 1rem;
-    margin: 0.2rem 0; border-left: 3px solid #f39c12;
+    margin: 0.2rem 0; border-left: 3px solid #d62300;
 }
 .meal-card {
     background: #f4f0ec; border-radius: 12px; padding: 1rem;
@@ -45,7 +37,7 @@ h1, h2, h3 { font-family: 'Playfair Display', serif; }
 }
 .sub-box {
     background: #f0e6d7; border-radius: 10px; padding: 1rem;
-    margin: 0.3rem 0; border-left: 3px solid #3498db;
+    margin: 0.3rem 0; border-left: 3px solid #885133;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -71,6 +63,8 @@ if 'last_spice' not in st.session_state:
     st.session_state.last_spice = "Medium"
 if 'last_skill' not in st.session_state:
     st.session_state.last_skill = "Beginner"
+if 'generating' not in st.session_state:
+    st.session_state.generating = False
 
 DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
 
@@ -102,8 +96,6 @@ with tab1:
         ])
 
     st.markdown("---")
-
-    # Chef Voice Mode - always visible before generate button
     st.markdown("### 🗣️ Chef Voice Settings")
     vc1, vc2 = st.columns([1, 2])
     with vc1:
@@ -119,25 +111,12 @@ with tab1:
         selected_voice_name = st.selectbox("Select Voice", list(voice_options.keys()), key="voice_select")
     selected_voice = voice_options[selected_voice_name]
     st.markdown("---")
-    
-    # Backend Health Check in Sidebar (Cached for 60s)
-    st.sidebar.markdown("### 🛠️ System Status")
-    is_healthy = check_backend_health(API_URL)
-    if is_healthy:
-        st.sidebar.success("✅ Backend Connected")
-    else:
-        st.sidebar.error("❌ Backend Unreachable (8002)")
-        st.sidebar.info("Tip: Make sure the FastAPI server is running on the same EC2 instance.")
 
-    if st.sidebar.checkbox("🔍 Show Debug Console"):
-        st.sidebar.markdown("---")
-        st.sidebar.write(f"**API URL:** `{API_URL}`")
-        if st.session_state.get('recipe_ready'):
-            st.sidebar.write("✅ Last Recipe: Ready")
-        else:
-            st.sidebar.write("⏳ Waiting for generation...")
+    # FIXED: prevent double call with generating flag
+    btn = st.button("⚛️ Generate Recipe with Quantum AI", disabled=st.session_state.generating)
 
-    if st.button("⚛️ Generate Recipe with Quantum AI"):
+    if btn and not st.session_state.generating:
+        st.session_state.generating = True
         with st.spinner("⚛️ Quantum algorithms optimizing... 🤖 AI Chef crafting your recipe..."):
             try:
                 special = []
@@ -156,7 +135,7 @@ with tab1:
                     "special_requests": special_str
                 }
 
-                response = requests.post(API_URL + "/generate-recipe", json=payload, timeout=90)
+                response = requests.post(API_URL + "/generate-recipe", json=payload, timeout=120)
 
                 if response.status_code == 200:
                     result = response.json()
@@ -174,6 +153,7 @@ with tab1:
                     st.session_state.last_dish = dish if dish else "chef special"
                     st.session_state.last_cuisine = cuisine
                     st.session_state.recipe_ready = True
+                    st.session_state.generating = False
 
                     st.session_state.recipe_history.append({
                         "name": recipe.get("dish_name", "Recipe"),
@@ -183,19 +163,18 @@ with tab1:
                         "nutrition": nutrition,
                         "rating": 0
                     })
-                    try:
-                        st.rerun()
-                    except AttributeError:
-                        st.experimental_rerun()
+                    st.rerun()
                 else:
+                    st.session_state.generating = False
                     st.error("API Error " + str(response.status_code) + ": " + response.text)
 
             except requests.exceptions.ConnectionError:
-                st.error("Cannot connect to backend! Start uvicorn on port 8002.")
+                st.session_state.generating = False
+                st.error("Cannot connect to backend! Start uvicorn on port 8001.")
             except Exception as e:
+                st.session_state.generating = False
                 st.error("Error: " + str(e))
 
-    # Display recipe from session state
     if st.session_state.recipe_ready and st.session_state.last_recipe:
         recipe = st.session_state.last_recipe
         nutrition = st.session_state.last_nutrition
@@ -213,31 +192,35 @@ with tab1:
         if tagline:
             st.markdown("*" + tagline + "*")
 
-        # Dish image using Pexels API (On-demand for speed)
-        user_dish = st.session_state.get("last_dish", dish_name)
-        if st.button("🖼️ Generate Food Image"):
-            try:
-                import requests as req
-                pexels_key = "Qo5UbnliTuhsVKamqEOcRITecVHcHtEfUXGLwPzaIialDQX703rp6Qu5"
-                query = str(user_dish) + " food"
-                with st.spinner("🖼️ Finding dish inspiration..."):
-                    resp = req.get(
-                        "https://api.pexels.com/v1/search?query=" + query + "&per_page=1&orientation=landscape",
-                        headers={"Authorization": pexels_key},
-                        timeout=5
-                    )
-                    if resp.status_code == 200:
-                        photos = resp.json().get("photos", [])
-                        if photos:
-                            img_url = photos[0]["src"]["large"]
-                            photographer = photos[0]["photographer"]
-                            # Use raw HTML to force the BROWSER to download the image, not the Streamlit server
-                            st.markdown(f'<img src="{img_url}" style="width:100%;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,0.5);" />', unsafe_allow_html=True)
-                            st.caption(f"📸 Photo by {photographer} on Pexels")
-            except Exception:
-                st.error("Could not load image. Please try again.")
-        else:
-            st.info("💡 Tip: Click 'Generate Food Image' above to see a preview of this dish.")
+        try:
+            import requests as req, base64
+            pexels_key = "Qo5UbnliTuhsVKamqEOcRITecVHcHtEfUXGLwPzaIialDQX703rp6Qu5"
+            user_dish = st.session_state.get("last_dish", dish_name)
+            query = str(user_dish) + " food"
+            with st.spinner("🖼️ Loading dish image..."):
+                resp = req.get(
+                    "https://api.pexels.com/v1/search?query=" + query + "&per_page=1&orientation=landscape",
+                    headers={"Authorization": pexels_key},
+                    timeout=10
+                )
+            if resp.status_code == 200:
+                photos = resp.json().get("photos", [])
+                if photos:
+                    img_url = photos[0]["src"]["large"]
+                    photographer = photos[0]["photographer"]
+                    img_resp = req.get(img_url, timeout=15)
+                    if img_resp.status_code == 200:
+                        b64 = base64.b64encode(img_resp.content).decode()
+                        st.markdown(
+                            '<div style="text-align:center;margin:1rem 0;">' +
+                            '<img src="data:image/jpeg;base64,' + b64 + '" ' +
+                            'style="width:100%;max-width:750px;border-radius:15px;box-shadow:0 6px 25px rgba(0,0,0,0.4);" />' +
+                            '<p style="color:#888;font-size:0.8rem;margin-top:0.4rem;">📸 Photo by ' + photographer + ' on Pexels</p></div>',
+                            unsafe_allow_html=True
+                        )
+        except Exception:
+            st.caption("🍽️ " + dish_name)
+
         col_a, col_b, col_c, col_d, col_e = st.columns(5)
         col_a.metric("⏱️ Prep", recipe.get("prep_time", "N/A"))
         col_b.metric("🔥 Cook", recipe.get("cook_time", "N/A"))
@@ -246,7 +229,6 @@ with tab1:
         col_e.metric("🌶️ Spice", spice)
 
         st.markdown("---")
-
         left, right = st.columns([1, 1])
 
         with left:
@@ -277,7 +259,6 @@ with tab1:
 
         with right:
             st.markdown("### 📊 Nutrition & Calorie Calculator")
-            # Safe nutrition access - handle both dict and list
             nutr = nutrition if isinstance(nutrition, dict) else {}
             per_serving = nutr.get("per_serving", {}) if isinstance(nutr.get("per_serving"), dict) else {}
             if per_serving:
@@ -318,7 +299,6 @@ with tab1:
                 st.markdown("**🕐 Best Time:** " + str(best_time))
 
         st.markdown("---")
-
         equipment = recipe.get("equipment_needed", [])
         if equipment:
             st.markdown("### 🔧 Equipment Needed")
@@ -326,7 +306,6 @@ with tab1:
             st.markdown("---")
 
         st.markdown("### 👨‍🍳 Step-by-Step Instructions")
-
         raw_steps = recipe.get("cooking_steps", []) if isinstance(recipe, dict) else []
         steps = raw_steps if isinstance(raw_steps, list) else []
         full_text = ""
@@ -352,18 +331,17 @@ with tab1:
                 full_text += step + " "
                 st.markdown("<div class='recipe-box'>" + step + "</div>", unsafe_allow_html=True)
 
-        # Chef Voice Mode - simple browser speech
         if voice_mode and full_text:
             v_rate = selected_voice["rate"]
             v_pitch = selected_voice["pitch"]
             safe_text = full_text[:4000].replace("'", " ").replace('"', ' ').replace(chr(10), ' ').replace(chr(13), ' ')
             st.markdown("**🗣️ " + selected_voice_name + " is ready:**")
             voice_html = """
-            <div style="padding:1rem;background:#1e2130;border-radius:12px;margin:0.5rem 0;display:flex;align-items:center;gap:0.8rem;flex-wrap:wrap;">
-                <button id="playBtn" style="background:linear-gradient(135deg,#c0392b,#8e44ad);color:white;border:none;border-radius:8px;padding:0.7rem 1.8rem;cursor:pointer;font-size:1rem;font-weight:bold;">▶ Play</button>
-                <button id="pauseBtn" style="background:#2c3e50;color:white;border:none;border-radius:8px;padding:0.7rem 1.5rem;cursor:pointer;font-size:1rem;">⏸ Pause</button>
-                <button id="stopBtn" style="background:#7f1d1d;color:white;border:none;border-radius:8px;padding:0.7rem 1.5rem;cursor:pointer;font-size:1rem;">⏹ Stop</button>
-                <span id="status" style="color:#aaa;font-size:0.9rem;margin-left:0.5rem;"></span>
+            <div style="padding:1rem;background:#f4f0ec;border-radius:12px;margin:0.5rem 0;display:flex;align-items:center;gap:0.8rem;flex-wrap:wrap;">
+                <button id="playBtn" style="background:linear-gradient(135deg,#885133,#d62300);color:white;border:none;border-radius:8px;padding:0.7rem 1.8rem;cursor:pointer;font-size:1rem;font-weight:bold;">▶ Play</button>
+                <button id="pauseBtn" style="background:#885133;color:white;border:none;border-radius:8px;padding:0.7rem 1.5rem;cursor:pointer;font-size:1rem;">⏸ Pause</button>
+                <button id="stopBtn" style="background:#d62300;color:white;border:none;border-radius:8px;padding:0.7rem 1.5rem;cursor:pointer;font-size:1rem;">⏹ Stop</button>
+                <span id="status" style="color:#885133;font-size:0.9rem;margin-left:0.5rem;"></span>
             </div>
             <script>
             var txt = '""" + safe_text + """';
@@ -371,21 +349,13 @@ with tab1:
             var pitch = """ + str(v_pitch) + """;
             var synth = window.speechSynthesis;
             var voices = [];
-            function loadVoices() {
-                voices = synth.getVoices();
-            }
+            function loadVoices() { voices = synth.getVoices(); }
             loadVoices();
-            if (speechSynthesis.onvoiceschanged !== undefined) {
-                speechSynthesis.onvoiceschanged = loadVoices;
-            }
+            if (speechSynthesis.onvoiceschanged !== undefined) { speechSynthesis.onvoiceschanged = loadVoices; }
             document.getElementById('playBtn').addEventListener('click', function() {
                 synth.cancel();
                 var u = new SpeechSynthesisUtterance(txt);
-                u.rate = rate;
-                u.pitch = pitch;
-                u.volume = 1.0;
-                u.lang = 'en-US';
-                // Try to pick matching gender voice
+                u.rate = rate; u.pitch = pitch; u.volume = 1.0;
                 var gender = '""" + selected_voice["gender"] + """';
                 var preferred = voices.filter(function(v) {
                     return gender === 'female' ? v.name.match(/female|woman|girl|zira|susan|karen|victoria|samantha/i) :
@@ -408,7 +378,6 @@ with tab1:
             st.components.v1.html(voice_html, height=90)
 
         st.markdown("---")
-
         subs = recipe.get("substitutions", [])
         if subs:
             st.markdown("### 🔄 Ingredient Substitutions")
@@ -435,7 +404,6 @@ with tab1:
                     st.markdown("• " + v)
 
         st.markdown("---")
-
         st.markdown("### ⭐ Rate This Recipe")
         rc1, rc2 = st.columns([1, 2])
         with rc1:
@@ -451,7 +419,6 @@ with tab1:
             st.text_area("Write a review (optional)", placeholder="How did it taste?")
 
         st.markdown("---")
-
         st.markdown("### 📅 Add to Weekly Meal Plan")
         mp1, mp2 = st.columns(2)
         with mp1:
@@ -532,5 +499,3 @@ with tab3:
         if st.button("Clear All History"):
             st.session_state.recipe_history = []
             st.rerun()
-
-
