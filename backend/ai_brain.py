@@ -7,7 +7,7 @@ import os
 from typing import List, Dict, Optional
 from groq import Groq
 
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+client = Groq(api_key="GROQ_API_KEY")
 
 CUISINE_KNOWLEDGE = {
     "Indian": {
@@ -250,7 +250,15 @@ class AIRecipeBrain:
     def __init__(self):
         self.models = [
             "llama-3.3-70b-versatile",
+            "openai/gpt-oss-120b",
+            "openai/gpt-oss-20b",
             "llama-3.1-8b-instant",
+            "llama3-70b-8192",
+            "llama3-8b-8192",
+            "moonshotai/kimi-k2-instruct-0905",
+            "qwen/qwen-3-32b",
+            "meta-llama/llama-4-scout-17b-16e-instruct",
+            "meta-llama/llama-4-maverick-17b-128e-instruct",
         ]
         self.model = self.models[0]
         print("AI brain loaded OK")
@@ -276,6 +284,9 @@ class AIRecipeBrain:
 
     def _parse_json(self, text):
         text = text.strip()
+        # Remove all markdown
+        for fence in ["```json", "```JSON", "```", "~~~"]:
+            text = text.replace(fence, "")
         if "```json" in text:
             text = text.split("```json")[1].split("```")[0].strip()
         elif "```" in text:
@@ -330,7 +341,7 @@ class AIRecipeBrain:
         try:
             prompt = chef_agent_prompt(dish_hint, cuisine1, cuisine2, veg, ingredients, is_fusion, skill_level)
             print("DEBUG: Prompt OK, length:", len(prompt))
-            raw = self._call_groq(prompt, max_tokens=12000)
+            raw = self._call_groq(prompt, max_tokens=6000)
             print("DEBUG: Response length:", len(raw))
             print("DEBUG: First 200 chars:", raw[:200])
             recipe = self._parse_json(raw)
@@ -479,6 +490,15 @@ class AIRecipeBrain:
             "healthy_swaps": swaps,
             "best_time_to_eat": best
         }
+
+
+
+
+
+
+
+
+
 
 
 

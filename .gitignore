@@ -20,3 +20,5 @@ frontend.log
 .vscode/
 .idea/
 .gemini/
+
+backend/ai_brain.py
