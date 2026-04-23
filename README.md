@@ -6,7 +6,7 @@ Gargeyi's Chromodynamics Café is an intelligent recipe generation system that c
 [![Demo Video](https://img.shields.io/badge/▶_Watch_Demo-Google_Drive-blue?style=for-the-badge&logo=googledrive)](https://drive.google.com/file/d/18Vr0qKRbZUkRA836r8Kdrpx2M4BSJa0-/view?usp=sharing)
 
 ##  Live Demo
-[![Live Demo](http://3.104.103.54:8501/)]
+http://3.104.103.54:8501/
 ---
 
 ## How It Works
